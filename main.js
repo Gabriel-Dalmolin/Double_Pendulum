@@ -137,6 +137,7 @@ function delete_pendulum(child) {
 function restart(depause = true) {
     if (depause) {
         paused = false;
+        pause_button.textContent = "❚❚";
     } else {
         pause(true);
     }
