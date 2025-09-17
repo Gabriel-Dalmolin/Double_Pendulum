@@ -156,7 +156,7 @@ function new_pendulum() {
 add_button.onclick = () => new_pendulum();
 
 function delete_pendulum(child) {
-    const parent = child.parentNode;
+    const parent = child.parentNode.parentNode;
     const index = Array.from(pendulums_div.children).indexOf(parent);
     pendulums.splice(index, 1);
     parent.remove();
