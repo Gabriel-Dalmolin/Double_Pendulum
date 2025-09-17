@@ -58,12 +58,31 @@ function getRandomColor() {
     return color;
 }
 
+function toggle_hide_div(child) {
+    hide_div = child.parentNode.parentNode.parentNode.querySelector("#hide_div");
+    if (hide_div.classList.contains("hidden")) {
+        hide_div.className = "flex flex-col gap-4"
+        child.textContent = "▾"
+    } else {
+        hide_div.className = "hidden"
+        child.textContent = "▴"
+    }
+}
+
 function new_pendulum() {
     const container = document.createElement("div");
     container.className = "bg-white rounded-lg p-2 w-full flex flex-col gap-4";
 
     const header = document.createElement("div");
     header.className = "flex justify-between items-center";
+
+    const smallerContainer = document.createElement("div");
+    smallerContainer.className = "flex gap-4";
+
+    const collapseButton = document.createElement("button");
+    collapseButton.id = "collapse_button"
+    collapseButton.textContent = "▴";
+    collapseButton.className = "text-md sm:text-lg md:text-xl";
 
     const title = document.createElement("h3");
     title.className = "text-md sm:text-lg md:text-xl";
@@ -74,19 +93,19 @@ function new_pendulum() {
     colorInput.value = getRandomColor();
     colorInput.id = "color_input";
 
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "X";
-    deleteButton.className = "text-lg sm:text-xl md:text-3xl text-red-800";
-    deleteButton.id = "delete_button";
-
-    header.appendChild(title);
+    smallerContainer.appendChild(collapseButton);
+    smallerContainer.appendChild(title);
+    header.appendChild(smallerContainer);
     header.appendChild(colorInput);
-    header.appendChild(deleteButton);
     container.appendChild(header);
+
+    const hide_div = document.createElement("div");
+    hide_div.id = "hide_div";
+    hide_div.className = "hidden";
 
     const hr = document.createElement("hr");
     hr.className = "bg-black h-0.5 w-full mb-4";
-    container.appendChild(hr);
+    hide_div.appendChild(hr);
 
     function createRow(labelText, inputType, inputAttributes = {}) {
         const row = document.createElement("div");
@@ -107,18 +126,27 @@ function new_pendulum() {
         return row;
     }
 
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete Pendulum";
+    deleteButton.className = "text-md sm:text-lg md:text-xl bg-red-500 w-full text-white p-2 rounded-lg";
+    deleteButton.id = "delete_button";
+
     // Add rows
-    container.appendChild(createRow("Θ₁ (Radianos)", "range", { min: 0, max: 6.28318530718, step: "any", id: "a1_input", value: Math.random() * 2 * Math.PI }));
-    container.appendChild(createRow("Θ₂ (Radianos)", "range", { min: 0, max: 6.28318530718, step: "any", id: "a2_input", value: Math.random() * 2 * Math.PI }));
+    hide_div.appendChild(createRow("Θ₁ (Radianos)", "range", { min: 0, max: 6.28318530718, step: "any", id: "a1_input", value: Math.random() * 2 * Math.PI }));
+    hide_div.appendChild(createRow("Θ₂ (Radianos)", "range", { min: 0, max: 6.28318530718, step: "any", id: "a2_input", value: Math.random() * 2 * Math.PI }));
 
-    container.appendChild(createRow("M₁ (Kg)", "number", { min: 0, class: "rounded-md border-2", value: 15, id: "m1_input" }));
-    container.appendChild(createRow("M₂ (Kg)", "number", { min: 0, class: "rounded-md border-2", value: 5, id: "m2_input" }));
+    hide_div.appendChild(createRow("M₁ (Kg)", "number", { min: 0, class: "rounded-md border-2", value: 15, id: "m1_input" }));
+    hide_div.appendChild(createRow("M₂ (Kg)", "number", { min: 0, class: "rounded-md border-2", value: 5, id: "m2_input" }));
 
-    container.appendChild(createRow("L₁ (Metros)", "number", { min: 0, class: "rounded-md border-2", value: 1, id: "l1_input", step: 0.1 }));
-    container.appendChild(createRow("L₂ (Metros)", "number", { min: 0, class: "rounded-md border-2", value: 0.5, id: "l2_input", step: 0.1 }));
+    hide_div.appendChild(createRow("L₁ (Metros)", "number", { min: 0, class: "rounded-md border-2", value: 1, id: "l1_input", step: 0.1 }));
+    hide_div.appendChild(createRow("L₂ (Metros)", "number", { min: 0, class: "rounded-md border-2", value: 0.5, id: "l2_input", step: 0.1 }));
 
-    container.appendChild(createRow("ω₁ (Rad/s)", "number", { min: 0, class: "rounded-md border-2", value: 0, id: "v1_input" }));
-    container.appendChild(createRow("ω₂ (Rad/s)", "number", { min: 0, class: "rounded-md border-2", value: 0, id: "v2_input" }));
+    hide_div.appendChild(createRow("ω₁ (Rad/s)", "number", { min: 0, class: "rounded-md border-2", value: 0, id: "v1_input" }));
+    hide_div.appendChild(createRow("ω₂ (Rad/s)", "number", { min: 0, class: "rounded-md border-2", value: 0, id: "v2_input" }));
+
+    hide_div.appendChild(deleteButton);
+
+    container.appendChild(hide_div)
 
     pendulums_div.appendChild(container);
 
@@ -128,7 +156,7 @@ function new_pendulum() {
 add_button.onclick = () => new_pendulum();
 
 function delete_pendulum(child) {
-    const parent = child.parentNode.parentNode;
+    const parent = child.parentNode;
     const index = Array.from(pendulums_div.children).indexOf(parent);
     pendulums.splice(index, 1);
     parent.remove();
@@ -154,6 +182,7 @@ function restart(depause = true) {
         const v2_input = pendulum.querySelector("#v2_input");
         const color_input = pendulum.querySelector("#color_input");
         const delete_button = pendulum.querySelector("#delete_button");
+        const collapse_button = pendulum.querySelector("#collapse_button");
 
         a1_input.oninput = () => pause(true, true);
         a2_input.oninput = () => pause(true, true);
@@ -165,6 +194,7 @@ function restart(depause = true) {
         v2_input.oninput = () => pause(true, true);
         color_input.oninput = () => pause(true, true);
         delete_button.onclick = () => delete_pendulum(delete_button);
+        collapse_button.onclick = () => toggle_hide_div(collapse_button);
 
         theta1 = parseFloat(a1_input.value);
         theta2 = parseFloat(a2_input.value);
