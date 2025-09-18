@@ -117,12 +117,31 @@ function new_pendulum() {
         const input = document.createElement("input");
         input.type = inputType;
 
+        let num_input = null;
+
+        if (inputType == "range") {
+            num_input = document.createElement("input");
+            num_input.className = "w-16 px-1 rounded-lg border-2";
+            num_input.type = "number";
+            num_input.min = "0";
+            num_input.max = "6.28318530718";
+            num_input.step = "0.1";
+            if (inputAttributes["id"] == "a1_input") {
+                num_input.id = "a1_num_input";
+            } else {
+                num_input.id = "a2_num_input";
+            }
+            num_input.step = "0.1";
+            num_input.value = inputAttributes["value"];
+        }
+
         for (const attr in inputAttributes) {
             input.setAttribute(attr, inputAttributes[attr]);
         }
 
         row.appendChild(label);
         row.appendChild(input);
+        if (num_input) { row.appendChild(num_input); }
         return row;
     }
 
@@ -132,8 +151,8 @@ function new_pendulum() {
     deleteButton.id = "delete_button";
 
     // Add rows
-    hide_div.appendChild(createRow("Θ₁ (Radianos)", "range", { min: 0, max: 6.28318530718, step: "any", id: "a1_input", value: Math.random() * 2 * Math.PI }));
-    hide_div.appendChild(createRow("Θ₂ (Radianos)", "range", { min: 0, max: 6.28318530718, step: "any", id: "a2_input", value: Math.random() * 2 * Math.PI }));
+    hide_div.appendChild(createRow("Θ₁ (Rad)", "range", { min: 0, max: 6.28318530718, step: "any", id: "a1_input", value: Math.random() * 2 * Math.PI }));
+    hide_div.appendChild(createRow("Θ₂ (Rad)", "range", { min: 0, max: 6.28318530718, step: "any", id: "a2_input", value: Math.random() * 2 * Math.PI }));
 
     hide_div.appendChild(createRow("M₁ (Kg)", "number", { min: 0, class: "rounded-md border-2", value: 15, id: "m1_input" }));
     hide_div.appendChild(createRow("M₂ (Kg)", "number", { min: 0, class: "rounded-md border-2", value: 5, id: "m2_input" }));
@@ -162,6 +181,17 @@ function delete_pendulum(child) {
     parent.remove();
 }
 
+function change_value_to_other_input_value(input_to_take_value, input_to_put_value, min, max) {
+    let value = input_to_take_value.value;
+    if (value < min) {
+        value = min;
+    } else if (value > max) {
+        value = max;
+    }
+    input_to_take_value.value = value;
+    input_to_put_value.value = value;
+}
+
 function restart(depause = true) {
     if (depause) {
         paused = false;
@@ -174,6 +204,8 @@ function restart(depause = true) {
     for (let pendulum of pendulums_div.children) {
         const a1_input = pendulum.querySelector("#a1_input");
         const a2_input = pendulum.querySelector("#a2_input");
+        const a1_num_input = pendulum.querySelector("#a1_num_input");
+        const a2_num_input = pendulum.querySelector("#a2_num_input");
         const m1_input = pendulum.querySelector("#m1_input");
         const m2_input = pendulum.querySelector("#m2_input");
         const l1_input = pendulum.querySelector("#l1_input");
@@ -184,8 +216,22 @@ function restart(depause = true) {
         const delete_button = pendulum.querySelector("#delete_button");
         const collapse_button = pendulum.querySelector("#collapse_button");
 
-        a1_input.oninput = () => pause(true, true);
-        a2_input.oninput = () => pause(true, true);
+        a1_input.oninput = () => {
+            pause(true, true);
+            change_value_to_other_input_value(a1_input, a1_num_input, 0, 6.28318530718);
+        };
+        a2_input.oninput = () => {
+            pause(true, true);
+            change_value_to_other_input_value(a2_input, a2_num_input, 0, 6.28318530718);
+        };
+        a1_num_input.oninput = () => {
+            pause(true, true);
+            change_value_to_other_input_value(a1_num_input, a1_input, 0, 6.28318530718)
+        };
+        a2_num_input.oninput = () => {
+            pause(true, true);
+            change_value_to_other_input_value(a2_num_input, a2_input, 0, 6.28318530718)
+        };
         m1_input.oninput = () => pause(true, true);
         m2_input.oninput = () => pause(true, true);
         l1_input.oninput = () => pause(true, true);
