@@ -1,14 +1,21 @@
 const main_canvas = document.querySelector("#main_canvas");
+const back_canvas = document.querySelector("#back_canvas");
+const graph_canvas = document.querySelector("#graph_canvas");
+const graph_ball_canvas = document.querySelector("#graph_ball_canvas");
 
 const pendulums_div = document.querySelector("#pendulums_div");
 
 const pause_button = document.querySelector("#pause_button");
 const simulate_button = document.querySelector("#simulate_button");
 const add_button = document.querySelector("#add_button");
+const path_button = document.querySelector("#path_button");
 
 let pendulums = [];
 
 const ctx = main_canvas.getContext("2d");
+const back_ctx = back_canvas.getContext("2d")
+const graph_ctx = graph_canvas.getContext("2d")
+const graph_ball_ctx = graph_ball_canvas.getContext("2d")
 
 const width = window.innerWidth * 3 / 4;
 const height = window.innerHeight;
@@ -22,12 +29,31 @@ const dt = 1 / 1200;
 const physics_runs_per_canvas_update = 10;
 let prpcu_counter = 0;
 
-const pixels_p_meter = 200;
+const pixels_p_meter = 150;
 
 let last_time = performance.now()
 
 main_canvas.width = width;
 main_canvas.height = height;
+
+back_canvas.width = width;
+back_canvas.height = height;
+
+const graph_width = width * 4 / 3 - 64;
+const graph_height = height;
+
+graph_canvas.width = graph_width;
+graph_canvas.height = graph_height;
+graph_ctx.lineWidth = 0.5;
+
+graph_ball_canvas.width = graph_width;
+graph_ball_canvas.height = graph_height;
+
+
+function toggle_path() {
+    back_canvas.classList.toggle("hidden");
+}
+path_button.onclick = () => { toggle_path() };
 
 function pause(stay_paused = false, r = false) {
     if (stay_paused) {
@@ -123,8 +149,6 @@ function new_pendulum() {
             num_input = document.createElement("input");
             num_input.className = "w-16 px-1 rounded-lg border-2";
             num_input.type = "number";
-            num_input.min = "0";
-            num_input.max = "6.28318530718";
             num_input.step = "0.1";
             if (inputAttributes["id"] == "a1_input") {
                 num_input.id = "a1_num_input";
@@ -179,20 +203,29 @@ function delete_pendulum(child) {
     const index = Array.from(pendulums_div.children).indexOf(parent);
     pendulums.splice(index, 1);
     parent.remove();
+    restart(false);
 }
 
 function change_value_to_other_input_value(input_to_take_value, input_to_put_value, min, max) {
     let value = input_to_take_value.value;
     if (value < min) {
-        value = min;
+        value = value % max;
+        if (value < 0) {
+            value = max + value;
+        }
+        input_to_take_value.value = value;
     } else if (value > max) {
         value = max;
+        input_to_take_value.value = value;
     }
-    input_to_take_value.value = value;
     input_to_put_value.value = value;
 }
 
 function restart(depause = true) {
+    back_ctx.clearRect(0, 0, width, height);
+    graph_ctx.clearRect(0, 0, graph_width, graph_height);
+    graph_ball_ctx.clearRect(0, 0, graph_width, graph_height);
+
     if (depause) {
         paused = false;
         pause_button.textContent = "❚❚";
@@ -217,20 +250,20 @@ function restart(depause = true) {
         const collapse_button = pendulum.querySelector("#collapse_button");
 
         a1_input.oninput = () => {
-            pause(true, true);
             change_value_to_other_input_value(a1_input, a1_num_input, 0, 6.28318530718);
+            pause(true, true);
         };
         a2_input.oninput = () => {
-            pause(true, true);
             change_value_to_other_input_value(a2_input, a2_num_input, 0, 6.28318530718);
+            pause(true, true);
         };
         a1_num_input.oninput = () => {
-            pause(true, true);
             change_value_to_other_input_value(a1_num_input, a1_input, 0, 6.28318530718)
+            pause(true, true);
         };
         a2_num_input.oninput = () => {
-            pause(true, true);
             change_value_to_other_input_value(a2_num_input, a2_input, 0, 6.28318530718)
+            pause(true, true);
         };
         m1_input.oninput = () => pause(true, true);
         m2_input.oninput = () => pause(true, true);
@@ -269,17 +302,27 @@ function update_variables() {
         v1 = pendulum[6];
         v2 = pendulum[7];
 
-        pendulum[6] += (- 9.81 * (2 * m1 + m2) * Math.sin(theta1) - m2 * 9.81 * Math.sin(theta1 - 2 * theta2) - 2 * Math.sin(theta1 - theta2) * m2 * (v2 ** 2 * l2 + v1 ** 2 * l1 * Math.cos(theta1 - theta2))) / (l1 * (2 * m1 + m2 - m2 * Math.cos(2 * theta1 - 2 * theta2))) * dt;
-        pendulum[0] += v1 * dt;
+        let a1 = (- 9.81 * (2 * m1 + m2) * Math.sin(theta1) - m2 * 9.81 * Math.sin(theta1 - 2 * theta2) - 2 * Math.sin(theta1 - theta2) * m2 * (v2 ** 2 * l2 + v1 ** 2 * l1 * Math.cos(theta1 - theta2))) / (l1 * (2 * m1 + m2 - m2 * Math.cos(2 * theta1 - 2 * theta2)));
+        let a2 = 2 * Math.sin(theta1 - theta2) * (v1 ** 2 * l1 * (m1 + m2) + 9.81 * (m1 + m2) * Math.cos(theta1) + v2 ** 2 * l2 * m2 * Math.cos(theta1 - theta2)) / (l2 * (2 * m1 + m2 - m2 * Math.cos(2 * theta1 - 2 * theta2)))
 
-        pendulum[7] += 2 * Math.sin(theta1 - theta2) * (v1 ** 2 * l1 * (m1 + m2) + 9.81 * (m1 + m2) * Math.cos(theta1) + v2 ** 2 * l2 * m2 * Math.cos(theta1 - theta2)) / (l2 * (2 * m1 + m2 - m2 * Math.cos(2 * theta1 - 2 * theta2))) * dt;
-        pendulum[1] += v2 * dt;
+        v1 += a1 * dt;
+        v2 += a2 * dt;
+
+        theta1 += v1 * dt;
+        theta2 += v2 * dt;
+
+        pendulum[0] = theta1;
+        pendulum[1] = theta2;
+        pendulum[6] = v1;
+        pendulum[7] = v2;
     }
 
 }
 
 function draw(pendulum) {
     ctx.fillStyle = pendulum[8];
+    back_ctx.strokeStyle = pendulum[8];
+    graph_ctx.strokeStyle = pendulum[8];
 
     theta1 = pendulum[0];
     theta2 = pendulum[1];
@@ -287,6 +330,10 @@ function draw(pendulum) {
     l2 = pendulum[5];
     m1 = pendulum[2];
     m2 = pendulum[3];
+    lx = pendulum[9];
+    ly = pendulum[10];
+    ltx = pendulum[11];
+    lty = pendulum[12];
 
     ctx.beginPath();
     let x1 = middle_x + l1 * Math.sin(theta1) * pixels_p_meter;
@@ -299,21 +346,63 @@ function draw(pendulum) {
     let x2 = middle_x + l1 * Math.sin(theta1) * pixels_p_meter + l2 * Math.sin(theta2) * pixels_p_meter
     let y2 = middle_y + l1 * Math.cos(theta1) * pixels_p_meter + l2 * Math.cos(theta2) * pixels_p_meter
 
+    pendulum[9] = x2;
+    pendulum[10] = y2;
+
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.stroke()
 
+    if (lx !== undefined && ly !== undefined) {
+        back_ctx.beginPath();
+        back_ctx.moveTo(lx, ly);
+        back_ctx.lineTo(x2, y2);
+        back_ctx.stroke();
+    }
+
+
     ctx.beginPath();
     const radius1 = (((3 * m1) / (31200 * Math.PI)) ** (1 / 3)) * pixels_p_meter; // considering the density of steel
     ctx.arc(x1, y1, radius1, 0, 2 * Math.PI);
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.lineWidth = 1;
     ctx.fill();
 
     ctx.beginPath()
     const radius2 = (((3 * m2) / (31200 * Math.PI)) ** (1 / 3)) * pixels_p_meter; // considering the density of steel
     ctx.arc(x2, y2, radius2, 0, 2 * Math.PI);
-    ctx.fill()
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.lineWidth = 1;
+    ctx.fill();
 
-    ctx.stroke()
+    function normalizeTheta(theta) {
+        return ((theta + Math.PI) % (2 * Math.PI) + (2 * Math.PI)) % (2 * Math.PI) - Math.PI;
+    }
+
+
+    let theta1n = normalizeTheta(theta1);
+    let theta2n = normalizeTheta(theta2);
+
+    let x = graph_width / 2 + (theta1n / Math.PI) * (graph_width / 2);
+    let y = graph_height / 2 + (theta2n / Math.PI) * (graph_height / 2);
+
+    pendulum[11] = x;
+    pendulum[12] = y;
+
+    if (ltx !== undefined && lty !== undefined && Math.abs(ltx - x) < graph_width / 2 && Math.abs(lty - y) < graph_height / 2) {
+        graph_ctx.beginPath();
+        graph_ctx.moveTo(ltx, lty);
+        graph_ctx.lineTo(x, y);
+        graph_ctx.stroke();
+    }
+
+
+    graph_ball_ctx.beginPath();
+    graph_ball_ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    graph_ball_ctx.fill();
+    graph_ball_ctx.stroke();
 }
 
 function animate(timestamp) {
@@ -332,6 +421,7 @@ function animate(timestamp) {
     }
 
     ctx.clearRect(0, 0, width, height);
+    graph_ball_ctx.clearRect(0, 0, graph_width, graph_height);
     for (let pendulum of pendulums) {
         draw(pendulum);
     }
