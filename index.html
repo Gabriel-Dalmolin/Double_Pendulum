@@ -26,7 +26,7 @@
 <body class="flex flex-col">
     <div class="flex relative h-screen">
         <div class="w-1/4 bg-slate-200 rounded-lg m-4 p-4 flex flex-col items-center shadow-lg">
-            <h1 class="text-lg sm:text-xl md:text-3xl">Pêndulos</h1>
+            <h1 class="text-lg sm:text-xl md:text-3xl">Pendulums</h1>
             <div class="border-y-2 border-black w-full my-4 flex p-4 gap-4 justify-center">
                 <button class="bg-black text-white text-lg sm:text-xl md:text-3xl pb-1 px-3 rounded-lg text-center"
                     id="add_button">
@@ -79,11 +79,11 @@
                         </div>
 
                         <div class="flex justify-between items-center w-full gap-4">
-                            <h4>L₁ (Metros)</h4>
+                            <h4>L₁ (Meters)</h4>
                             <input type="number" min="0" class="rounded-md border-2" value="1" id="l1_input" step="0.1">
                         </div>
                         <div class="flex justify-between items-center w-full gap-4">
-                            <h4>L₂ (Metros)</h4>
+                            <h4>L₂ (Meters)</h4>
                             <input type="number" min="0" class="rounded-md border-2" value="0.5" id="l2_input"
                                 step="0.1">
                         </div>
@@ -103,7 +103,7 @@
             </div>
 
             <button class="text-lg sm:text-xl md:text-3xl mt-4" id="simulate_button">
-                SIMULAR
+                SIMULATE
             </button>
         </div>
 
@@ -113,14 +113,14 @@
     </div>
 
     <div class="relative m-4 flex flex-col items-center">
-        <canvas id="graph_canvas" class="border-2 rounded-lg shadow-lg"></canvas>
-        <canvas id="graph_ball_canvas" class="z-10 absolute top-0"></canvas>
+        <h3 class="text-md sm:text-lg md:text-xl">
+            A graph that plots (θ1, θ2) and has range [-π, π]
+        </h3>
     </div>
 
     <div class="relative m-4 flex flex-col items-center">
-        <h3 class="text-md sm:text-lg md:text-xl">
-            Um gráfico mostrando o θ1 no eixo x e θ2 no eixo y, ele vai de [-π, π]
-        </h3>
+        <canvas id="graph_canvas" class="border-2 rounded-lg shadow-lg"></canvas>
+        <canvas id="graph_ball_canvas" class="z-10 absolute top-0"></canvas>
     </div>
 
     <script src="main.js"></script>

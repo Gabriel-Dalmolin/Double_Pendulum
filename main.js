@@ -181,8 +181,8 @@ function new_pendulum() {
     hide_div.appendChild(createRow("M₁ (Kg)", "number", { min: 0, class: "rounded-md border-2", value: 15, id: "m1_input" }));
     hide_div.appendChild(createRow("M₂ (Kg)", "number", { min: 0, class: "rounded-md border-2", value: 5, id: "m2_input" }));
 
-    hide_div.appendChild(createRow("L₁ (Metros)", "number", { min: 0, class: "rounded-md border-2", value: 1, id: "l1_input", step: 0.1 }));
-    hide_div.appendChild(createRow("L₂ (Metros)", "number", { min: 0, class: "rounded-md border-2", value: 0.5, id: "l2_input", step: 0.1 }));
+    hide_div.appendChild(createRow("L₁ (Meters)", "number", { min: 0, class: "rounded-md border-2", value: 1, id: "l1_input", step: 0.1 }));
+    hide_div.appendChild(createRow("L₂ (Meters)", "number", { min: 0, class: "rounded-md border-2", value: 0.5, id: "l2_input", step: 0.1 }));
 
     hide_div.appendChild(createRow("ω₁ (Rad/s)", "number", { min: 0, class: "rounded-md border-2", value: 0, id: "v1_input" }));
     hide_div.appendChild(createRow("ω₂ (Rad/s)", "number", { min: 0, class: "rounded-md border-2", value: 0, id: "v2_input" }));
